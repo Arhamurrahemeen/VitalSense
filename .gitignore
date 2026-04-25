@@ -1,0 +1,14 @@
+# Sensitive API Keys (Critical)
+.env
+
+# Large MediaPipe Models (Too big for standard Git)
+*.task
+
+# Python System Files
+__pycache__/
+*.pyc
+.venv/
+.vscode/
+
+# Logs and local artifacts
+*.log
