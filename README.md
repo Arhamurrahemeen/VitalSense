@@ -1,9 +1,3 @@
-Since you liked the structure of the **yarPPG** documentation, we can adapt that clean, professional style for your **VitalSense** repository. It strikes a great balance between academic grounding and developer-friendly "Quick Start" guides.
-
-Here is your finalized `README.md`, designed to look sharp on GitHub:
-
----
-
 # VitalSense
 
 [cite_start]**VitalSense** is a high-performance implementation of remote PhotoPlethysmoGraphy (rPPG)[cite: 1, 22]. [cite_start]It enables camera-based measurement of the human blood volume pulse by detecting subtle changes in skin color that originate from blood pulsation[cite: 60, 137].
