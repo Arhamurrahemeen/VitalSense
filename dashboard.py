@@ -237,7 +237,12 @@ class DashboardApp:
         try:
             lock = self.shared_state["lock"]
             with lock:
-                raw_buffer = np.asarray(self.shared_state.get("raw_buffer", self.shared_state.get("green_buffer", [])), dtype=float)
+                # Prefer raw_buffer if it contains data, otherwise fall back to green_buffer
+                raw_data = self.shared_state.get("raw_buffer", [])
+                if not isinstance(raw_data, (np.ndarray, list)) or len(raw_data) == 0:
+                    raw_data = self.shared_state.get("green_buffer", [])
+                raw_buffer = np.asarray(raw_data, dtype=float)
+
                 filtered_buffer = np.asarray(self.shared_state.get("filtered_buffer", []), dtype=float)
                 fft_freqs = np.asarray(self.shared_state.get("fft_freqs", []), dtype=float)
                 fft_mags = np.asarray(self.shared_state.get("fft_mags", []), dtype=float)
@@ -426,8 +431,6 @@ class DashboardApp:
             self.filtered_placeholder.set_visible(False)
             self.fft_placeholder.set_visible(False)
 
-            self.figure.tight_layout(rect=(0.0, 0.05, 1.0, 0.95))
-
         except Exception as exc:
             _log_dashboard_error("DashboardApp._setup_figure", exc, fallback)
 
@@ -538,7 +541,7 @@ class DashboardApp:
                     0.01,
                     0.01,
                     footer_text,
-                    fontsize=9,
+                    fontsize=8,
                     va="bottom",
                     ha="left",
                 )
@@ -563,10 +566,21 @@ class DashboardApp:
 
         try:
             plt.style.use("seaborn-v0_8-whitegrid")
-            self.figure, axes = plt.subplots(3, 1, figsize=(10, 8), constrained_layout=False)
+            self.figure, axes = plt.subplots(3, 1, figsize=(7, 7), constrained_layout=True)
             self.axes_raw, self.axes_filtered, self.axes_fft = axes
 
             self._setup_figure()
+
+            # Position the dashboard window to avoid overlapping with the camera
+            mngr = plt.get_current_fig_manager()
+            if hasattr(mngr, "window"):
+                try:
+                    mngr.window.wm_geometry("+700+50")
+                except Exception:
+                    try:
+                        mngr.window.move(700, 50)
+                    except Exception:
+                        pass
 
             self.animation = animation.FuncAnimation(
                 self.figure,

@@ -579,6 +579,12 @@ def _open_camera() -> cv2.VideoCapture | None:
         camera = cv2.VideoCapture(0)
         if not camera.isOpened():
             raise RuntimeError("camera could not be opened")
+            
+        # Request standard resolution and FPS to help stabilize the capture pipeline.
+        camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        camera.set(cv2.CAP_PROP_FPS, FS)
+        
         return camera
 
     except Exception as exc:
@@ -611,9 +617,9 @@ def run() -> None:
         if cap is None:
             return
 
-        cv2.namedWindow("VitalSense — Camera", cv2.WINDOW_NORMAL)
-        cv2.resizeWindow("VitalSense — Camera", 960, 720)
-        cv2.moveWindow("VitalSense — Camera", 0, 0)
+        cv2.namedWindow("VitalSense Main Monitor", cv2.WINDOW_NORMAL)
+        cv2.resizeWindow("VitalSense Main Monitor", 640, 480)
+        cv2.moveWindow("VitalSense Main Monitor", 50, 50)
 
         if START_DASHBOARD:
             try:
@@ -623,6 +629,8 @@ def run() -> None:
                 _log_main_error("run dashboard startup", exc, "continue without the Matplotlib dashboard")
 
         prev_time = time.time()
+        fps_ema = 0.0
+        alpha = 0.1  # Smoothing factor for FPS display
         print("VitalSense Stage 1: Press 'q' to stop.")
 
         while cap.isOpened() and not shutdown_event.is_set():
@@ -634,9 +642,15 @@ def run() -> None:
 
                 current_time = time.time()
                 elapsed = current_time - prev_time
-                fps = 1.0 / elapsed if elapsed > 1e-6 else 0.0
                 prev_time = current_time
-                latest_fps = fps
+                
+                # Calculate FPS with EMA smoothing to avoid jittery display
+                fps = 1.0 / elapsed if elapsed > 1e-6 else 0.0
+                if fps_ema == 0.0:
+                    fps_ema = fps
+                else:
+                    fps_ema = alpha * fps + (1.0 - alpha) * fps_ema
+                latest_fps = fps_ema
 
                 frame = cv2.flip(frame, 1)
 
@@ -650,24 +664,6 @@ def run() -> None:
 
                 if measurement_state == "collecting":
                     window_frame_count += 1
-
-                _update_shared_state(
-                    latest_lighting=latest_lighting,
-                    latest_luminance=latest_luminance,
-                    latest_fps=latest_fps,
-                    latest_bpm=latest_bpm,
-                    latest_confidence=latest_confidence,
-                    latest_stress=latest_stress,
-                    latest_rmssd=latest_rmssd,
-                    latest_sdnn=latest_sdnn,
-                    latest_feedback=latest_feedback,
-                    latest_distance=latest_distance,
-                    latest_filtered_signal=latest_filtered_signal,
-                    latest_session_stats=dict(session_stats),
-                    measurement_state=measurement_state,
-                    session_start_time=session_start_time,
-                    last_feedback_time=last_feedback_time,
-                )
 
                 if lighting_status != "good":
                     latest_distance = "N/A"

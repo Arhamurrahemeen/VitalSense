@@ -87,7 +87,11 @@ def classify_lighting(
         if frame is None or frame.size == 0:
             raise ValueError("frame is empty or None")
 
-        ycrcb = cv2.cvtColor(frame, cv2.COLOR_BGR2YCrCb)
+        # Downsample the frame for lighting metrics to reduce CPU load and stabilize FPS.
+        # A small thumbnail is sufficient for global luminance and flicker detection.
+        small_frame = cv2.resize(frame, (160, 120), interpolation=cv2.INTER_AREA)
+        
+        ycrcb = cv2.cvtColor(small_frame, cv2.COLOR_BGR2YCrCb)
         y_channel = ycrcb[:, :, 0]
 
         mean_luminance = float(np.mean(y_channel))
