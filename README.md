@@ -45,7 +45,7 @@ For a detailed breakdown of the engineering stages, mathematical computations, a
 
 ## Research & Footnotes
 VitalSense is built upon established research in the field of digital signal processing and rPPG:
-* **W. Verkruysse et al. (2008)[cite_start]**: Remote plethysmographic imaging using ambient light.
+* **W. Verkruysse et al. (2008)**: Remote plethysmographic imaging using ambient light.
 * **Poh et al. (2010)**: Foundations of webcam-based heart rate estimation.
 * **Zhao et al. (2023)**: HRV feature extraction from rPPG signals.
 
