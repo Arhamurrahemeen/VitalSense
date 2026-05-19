@@ -19,7 +19,7 @@ To run the VitalSense application, clone the repository and set up a virtual env
 ```bash
 # Clone the repository
 git clone https://github.com/Arhamurrahemeen/VitalSense.git
-cd VitalSense
+cd src
 
 # Create and activate a virtual environment
 python -m venv venv
